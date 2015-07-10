@@ -31,9 +31,9 @@
 
 " Here we go.
 
+let g:filen = "/home/steven/.vim-vis-mark"
 " This is the function setting a mark, called from visual mode.
 function! VisualMark() "{{{
-
     " get the mark ID
     let mark = GetVisualMarkInput("mark selection ")
 
@@ -45,22 +45,22 @@ function! VisualMark() "{{{
     normal! o
     let [endLine, endCol] = [line('.'), col('.')]
 
-    let output = register . " " . startLine . " " . startCol . " " . endLine . " " . endCol
+    let output = [mark . " " . startLine . " " . startCol . " " . endLine . " " . endCol]
 
-    for line in readfile("/home/steven/.vim-vis-mark", " ")
+    for line in readfile(g:filen, " ")
       "If the first character of the line is the mark, then delete it from the
       "list because we are about to add a new definition for that mark
+      "TODO Do this with writeline, or some other way, as opening a buffer is
+      "slow
       if line[0] =~ mark
         new ~/.vim-vis-mark
-        exec "normal! /^" . register . ".\\+\<cr>dd"
+        exec "normal! /^" . mark . ".\\+\<cr>dd"
         :wq
       endif
     endfor
     "Add the new mark definition to the file
-    new ~/.vim-vis-mark
-    put =output
-    :wq
-  endfun
+    call writefile(readfile(g:filen)+output, g:filen)
+endfun
 "}}}
 
 " This is the function retrieving a marked selection, called from normal mode.
@@ -69,7 +69,7 @@ function! GetVisualMark() "{{{
     let mark = GetVisualMarkInput("restore selection ")
 
     "get pos from file
-    for line in readfile("/home/steven/.vim-vis-mark", " ")
+    for line in readfile(g:filen, " ")
       "if the register value is the firt character on the line
       if line[0] =~ mark
         "This creates a list of the 5 different values saved in the file
