@@ -81,6 +81,7 @@ endfun
 " requires the enter key to be pressed
 " TODO: would be great with no need to hit enter
 function! GetVisualMarkInput(prompt) "{{{
+    echom a:prompt
     let mark = nr2char(getchar())
     return mark
 endfun
