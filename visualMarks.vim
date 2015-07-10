@@ -21,25 +21,58 @@
 "
 " Things that are still missing, in my opinion:
 " TODO:
-"   - make the marks specific to each file.
-"   - the dictionnary variable type is fast and snappy because it has a hash
-"     function. Using it would maybe help us avoiding opening and closing a file
-"     with Vim to save and read the marks. Is there a way to serialize variables
-"     in vimScript? I'll have a look at this.
-"   - print a warning message when the user wants to retrieve a mark that has
-"     not been defined yet.
+"   - make the warning softer?
+"   - utility functions to clean the dictionnary, change filenames, move files,
+"     etc.
+"   - make all this a Pathogen-friendly?
 " DONE:
+"   - use and save/read a `dictionnary`
+"   - warn the user when trying to get a unexistent mark
+"   - make the marks specific to each file.
 "   - merged hallzy-master
 "   - find the file in one's home whatever name one has ;)
 "   - corrected a bug due to unconsistent variable names `mark` vs `register`
-" I think I will soon begin to like it :)
+" This DOES begin to look like something! :)
 
 " Here we go.
 
+" A kind utility function to save a vimScript variable to a file? "{{{
+function! SaveVariable(var, file)
+    " the `writefile` function only take lists, so wrap it in a list
+    call writefile([string(a:var)], a:file)
+endfun
+" And its other side: restore a variable from a file:
+function! ReadVariable(file)
+    " don't forget to unwrap it!
+    let recover = readfile(a:file)[0]
+    " watch out, it is so far just a string, make it what it should be:
+    execute "let result = " . recover
+    return result
+endfun
+"}}}
+
+" the file where the big dictionnary will be stored.
 let g:filen = $HOME . "/.vim-vis-mark"
+" the big dictionnary itself:
+" Its organization is simple:
+"  - each *key* is the full path to a file
+"  - each *entry* is also a dictionnary, for which:
+"      - each *key* is a mark identifier
+"      - each *entry* is the position of the recorded selection, a list:
+"           - [startLine, startColumn, endLine, endColumn]
+if filereadable(g:filen)
+    let g:visualMarks = ReadVariable(g:filen)
+else
+    " create the file if it does not exist
+    let g:visualMarks = {}
+    call SaveVariable(g:visualMarks, g:filen)
+endif
 
 " This is the function setting a mark, called from visual mode.
 function! VisualMark() "{{{
+    " get the current file path
+    let filePath = expand('%:p')
+
     " get the mark ID
     let mark = GetVisualMarkInput("mark selection ")
 
@@ -51,42 +84,51 @@ function! VisualMark() "{{{
     normal! o
     let [endLine, endCol] = [line('.'), col('.')]
 
-    let output = [mark . " " . startLine . " " . startCol . " " . endLine . " " . endCol]
+    " update the dictionnary:
+    " Initialize the file entry if didn't existed yet:
+    if !has_key(g:visualMarks, filePath)
+        let g:visualMarks[filePath] = {}
+    endif
+    " and fill it up!
+    let g:visualMarks[filePath][mark] = [startLine, startCol, endLine, endCol]
 
-    for line in readfile(g:filen, " ")
-      "If the first character of the line is the mark, then delete it from the
-      "list because we are about to add a new definition for that mark
-      "TODO Do this with writeline, or some other way, as opening a buffer is
-      "slow
-      if line[0] =~ mark
-        new ~/.vim-vis-mark
-        exec "normal! /^" . mark . ".\\+\<cr>dd"
-        :wq
-      endif
-    endfor
-    "Add the new mark definition to the file
-    call writefile(readfile(g:filen)+output, g:filen)
+    " and save it to the file. But I am sure we don't need to do this each time.
+    call SaveVariable(g:visualMarks, g:filen)
 endfun
 "}}}
 
 " This is the function retrieving a marked selection, called from normal mode.
 function! GetVisualMark() "{{{
+    " get the current file path
+    let filePath = expand('%:p')
+
     " get the mark ID
     let mark = GetVisualMarkInput("restore selection ")
 
-    "get pos from file
-    for line in readfile(g:filen, " ")
-      "if the register value is the firt character on the line
-      if line[0] =~ mark
-        "This creates a list of the 5 different values saved in the file
-        let coordinates = split(line)
+    " retrieve the latest version of the dictionnary. (No need each time?)
+    let g:visualMarks = ReadVariable(g:filen)
+
+    " check whether the mark has already been recorded, then put the flag down.
+    let noSuchMark = 1
+    if has_key(g:visualMarks, filePath)
+        if has_key(g:visualMarks[filePath], mark)
+            let noSuchMark = 0
+        endif
+    endif
+
+    if noSuchMark
+        echom "no Such mark " . mark . " for file " . filePath
+    else
+        " Then we can safely get back to this selection!
+        let coordinates = g:visualMarks[filePath][mark]
         "move to the start pos, go to visual mode, and go to the end pos
-        call cursor(coordinates[1], coordinates[2])
+        call cursor(coordinates[0], coordinates[1])
         "enter visual mode to select the rest
         exec "normal! v"
-        call cursor(coordinates[3], coordinates[4])
-      endif
-    endfor
+        call cursor(coordinates[2], coordinates[3])
+    endif
+
+    " And that's it! :)
 endfun
 "}}}
 
@@ -102,8 +144,6 @@ function! GetVisualMarkInput(prompt) "{{{
 endfun
 "}}}
 
-
 " And we're done. Now map it to something cool:
 vnoremap m <esc>:call VisualMark()<cr>
 nnoremap < :call GetVisualMark()<cr>
-
