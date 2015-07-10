@@ -36,6 +36,8 @@
 
 " Here we go.
 
+let g:filen = $HOME . "/.vim-vis-mark"
+
 " This is the function setting a mark, called from visual mode.
 function! VisualMark() "{{{
     " get the mark ID
@@ -51,7 +53,7 @@ function! VisualMark() "{{{
 
     let output = [mark . " " . startLine . " " . startCol . " " . endLine . " " . endCol]
 
-    for line in readfile($HOME . "/.vim-vis-mark", " ")
+    for line in readfile(g:filen, " ")
       "If the first character of the line is the mark, then delete it from the
       "list because we are about to add a new definition for that mark
       "TODO Do this with writeline, or some other way, as opening a buffer is
@@ -73,7 +75,7 @@ function! GetVisualMark() "{{{
     let mark = GetVisualMarkInput("restore selection ")
 
     "get pos from file
-    for line in readfile($HOME . "/.vim-vis-mark", " ")
+    for line in readfile(g:filen, " ")
       "if the register value is the firt character on the line
       if line[0] =~ mark
         "This creates a list of the 5 different values saved in the file
