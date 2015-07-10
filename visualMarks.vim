@@ -21,13 +21,18 @@
 "
 " Things that are still missing, in my opinion:
 " TODO:
-"   - handle the case where the user wants to retrieve a mark that has not been
-"     defined yet. (you get an error yet if you do so)
-"   - make it possible to get the input in a way that don't need the <CR> key to
-"     be pressed (a mark will then consists in a fixed number of characters. 1
-"     would be enough to me.)
-"   - make the dictionnary local to a buffer.
-"   - make the marks persistent once Vim is closed (save'em to a file)
+"   - make the marks specific to each file.
+"   - the dictionnary variable type is fast and snappy because it has a hash
+"     function. Using it would maybe help us avoiding opening and closing a file
+"     with Vim to save and read the marks. Is there a way to serialize variables
+"     in vimScript? I'll have a look at this.
+"   - print a warning message when the user wants to retrieve a mark that has
+"     not been defined yet.
+" DONE:
+"   - merged hallzy-master
+"   - find the file in one's home whatever name one has ;)
+"   - corrected a bug due to unconsistent variable names `mark` vs `register`
+" I think I will soon begin to like it :)
 
 " Here we go.
 
@@ -45,14 +50,14 @@ function! VisualMark() "{{{
     normal! o
     let [endLine, endCol] = [line('.'), col('.')]
 
-    let output = register . " " . startLine . " " . startCol . " " . endLine . " " . endCol
+    let output = mark . " " . startLine . " " . startCol . " " . endLine . " " . endCol
 
-    for line in readfile("/home/steven/.vim-vis-mark", " ")
+    for line in readfile($HOME . "/.vim-vis-mark", " ")
       "If the first character of the line is the mark, then delete it from the
       "list because we are about to add a new definition for that mark
       if line[0] =~ mark
         new ~/.vim-vis-mark
-        exec "normal! /^" . register . ".\\+\<cr>dd"
+        exec "normal! /^" . mark . ".\\+\<cr>dd"
         :wq
       endif
     endfor
@@ -69,7 +74,7 @@ function! GetVisualMark() "{{{
     let mark = GetVisualMarkInput("restore selection ")
 
     "get pos from file
-    for line in readfile("/home/steven/.vim-vis-mark", " ")
+    for line in readfile($HOME . "/.vim-vis-mark", " ")
       "if the register value is the firt character on the line
       if line[0] =~ mark
         "This creates a list of the 5 different values saved in the file
