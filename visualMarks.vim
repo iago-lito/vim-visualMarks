@@ -1,4 +1,4 @@
-" 2015-07-09: This small vimScript just wants to provide the following feature: 
+" 2015-07-09: This small vimScript just wants to provide the following feature:
 " - - - Save visually selected blocks by associating them to custom marks. - - -
 " Just like with ma in normal mode, to mark the position of the cursor, then `a
 " to retrieve it, you would mark visually selected areas then get them back in a
@@ -14,7 +14,7 @@
 "     selection.
 "   - the function VisualMark(), when called from visual mode, waits for input
 "     from the user (which mark to use), and saves the current coordinates of
-"     the selected area to the dictionnary. 
+"     the selected area to the dictionnary.
 "   - the function GetVisualMark(), when called from normal mode, waits for
 "     input from the user (which mark to retrieve), then enters visual mode and
 "     retrieves the previously marked selection.
@@ -33,7 +33,7 @@
 
 " This is the dictionnary. Each mark will be stored as:
 " {<mark ID>: [line number (start), column (start), line (end), column (end)]}
-let g:visualMarks={} 
+let g:visualMarks={}
 
 " This is the function setting a mark, called from visual mode.
 function! VisualMark() "{{{
@@ -71,7 +71,7 @@ function! GetVisualMark() "{{{
     call setpos('.', [0, startLine, startColumn, 0])
     normal! v
     call setpos('.', [0, endLine, endColumn, 0])
- 
+
 endfun
 "}}}
 
@@ -81,9 +81,7 @@ endfun
 " requires the enter key to be pressed
 " TODO: would be great with no need to hit enter
 function! GetVisualMarkInput(prompt) "{{{
-    call inputsave()
-    let mark = input(a:prompt)
-    call inputrestore()
+    let mark = nr2char(getchar())
     return mark
 endfun
 "}}}
