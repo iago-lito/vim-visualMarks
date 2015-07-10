@@ -49,6 +49,8 @@ function! ReadVariable(file)
     execute "let result = " . recover
     return result
 endfun
+" Cool, isn't it? Thank you VanLaser from the Stack!
+" http://stackoverflow.com/q/31348782/3719101
 "}}}
 
 " the file where the big dictionnary will be stored.
