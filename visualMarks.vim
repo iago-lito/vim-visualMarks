@@ -38,7 +38,6 @@
 
 " This is the function setting a mark, called from visual mode.
 function! VisualMark() "{{{
-
     " get the mark ID
     let mark = GetVisualMarkInput("mark selection ")
 
@@ -50,11 +49,13 @@ function! VisualMark() "{{{
     normal! o
     let [endLine, endCol] = [line('.'), col('.')]
 
-    let output = mark . " " . startLine . " " . startCol . " " . endLine . " " . endCol
+    let output = [mark . " " . startLine . " " . startCol . " " . endLine . " " . endCol]
 
     for line in readfile($HOME . "/.vim-vis-mark", " ")
       "If the first character of the line is the mark, then delete it from the
       "list because we are about to add a new definition for that mark
+      "TODO Do this with writeline, or some other way, as opening a buffer is
+      "slow
       if line[0] =~ mark
         new ~/.vim-vis-mark
         exec "normal! /^" . mark . ".\\+\<cr>dd"
@@ -62,10 +63,8 @@ function! VisualMark() "{{{
       endif
     endfor
     "Add the new mark definition to the file
-    new ~/.vim-vis-mark
-    put =output
-    :wq
-  endfun
+    call writefile(readfile(g:filen)+output, g:filen)
+endfun
 "}}}
 
 " This is the function retrieving a marked selection, called from normal mode.
