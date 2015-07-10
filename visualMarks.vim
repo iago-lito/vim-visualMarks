@@ -31,10 +31,6 @@
 
 " Here we go.
 
-" This is the dictionnary. Each mark will be stored as:
-" {<mark ID>: [line number (start), column (start), line (end), column (end)]}
-let g:visualMarks={}
-
 " This is the function setting a mark, called from visual mode.
 function! VisualMark() "{{{
 
@@ -43,35 +39,48 @@ function! VisualMark() "{{{
 
     " retrieve the position starting the selection
     normal! gv
-    let [startLine, startColumn] = [line('.'), col('.')]
+    let [startLine, startCol] = [line('.'), col('.')]
 
     " retrieve the position ending the selection
     normal! o
-    let [endLine, endColumn] = [line('.'), col('.')]
+    let [endLine, endCol] = [line('.'), col('.')]
 
-    " save the mark!
-    exec "let g:visualMarks.".mark
-                \."=[startLine, startColumn, endLine, endColumn]"
+    let output = register . " " . startLine . " " . startCol . " " . endLine . " " . endCol
 
-    " exit visual mode
-    exec "normal! \<esc>"
-
-endfun
+    for line in readfile("/home/steven/.vim-vis-mark", " ")
+      "If the first character of the line is the mark, then delete it from the
+      "list because we are about to add a new definition for that mark
+      if line[0] =~ mark
+        new ~/.vim-vis-mark
+        exec "normal! /^" . register . ".\\+\<cr>dd"
+        :wq
+      endif
+    endfor
+    "Add the new mark definition to the file
+    new ~/.vim-vis-mark
+    put =output
+    :wq
+  endfun
 "}}}
 
 " This is the function retrieving a marked selection, called from normal mode.
 function! GetVisualMark() "{{{
-
     " get the mark ID
     let mark = GetVisualMarkInput("restore selection ")
 
-    " restore the corresponding selection:
-    exec "let [startLine, startColumn, endLine, endColumn]"
-                \ ." = g:visualMarks.".mark
-    call setpos('.', [0, startLine, startColumn, 0])
-    normal! v
-    call setpos('.', [0, endLine, endColumn, 0])
-
+    "get pos from file
+    for line in readfile("/home/steven/.vim-vis-mark", " ")
+      "if the register value is the firt character on the line
+      if line[0] =~ mark
+        "This creates a list of the 5 different values saved in the file
+        let coordinates = split(line)
+        "move to the start pos, go to visual mode, and go to the end pos
+        call cursor(coordinates[1], coordinates[2])
+        "enter visual mode to select the rest
+        exec "normal! v"
+        call cursor(coordinates[3], coordinates[4])
+      endif
+    endfor
 endfun
 "}}}
 
