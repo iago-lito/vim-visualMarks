@@ -29,8 +29,6 @@
 "   - avoid saving and reading the dictionnary on each call to the functions.
 "     Better use an `autocmd VimEnter, VimLeave`? Yet it would be less safe?
 "     Does it slow the process down that much?
-"   - save the type of visual mode? (v, V, <c-v>) (might be some more work since
-"     3 positions are needed to save a <c-v> block)
 " DONE:
 "   - use and save/read a `dictionnary`
 "   - warn the user when trying to get a unexistent mark
@@ -43,6 +41,7 @@
 "   - choose whether or not leaving visual mode after having set a mark
 "   - make the warning softer
 "   - optional file location for the file
+"   - save the type of visual mode? (v, V, <c-v>)
 "
 " This DOES begin to look like something! :)
 
