@@ -153,15 +153,15 @@ function! GetVisualMark() "{{{
     else
         " Then we can safely get back to this selection!
         let coordinates = g:visualMarks[filePath][mark]
+        let visualMode = coordinates[4]
         "move to the start pos, go to visual mode, and go to the end pos
         " + recursively open folds, just enough to see the selection
-        " call cursor(coordinates[2], coordinates[3])
         normal! zv
         call cursor(coordinates[0], coordinates[1])
         "enter visual mode to select the rest
-        if coordinates[4] ==? "blk_vis"
+        if visualMode ==? "blk_vis"
           exec "normal! zv\<c-v>"
-        elseif coordinates[4] ==? "line_vis"
+        elseif visualMode ==? "line_vis"
           exec "normal! zvV"
         else
           exec "normal! zvv"
