@@ -97,15 +97,15 @@ function! VisualMark() "{{{
     " retrieve the position starting the selection
     normal! gvo
     let currentmode = mode()
-    " if currentmode == "\<C-V>"
-    "   echom "Block Visual"
-    " elseif currentmode == "V"
-    "   echom "Line Visual"
-    " elseif currentmode == "v"
-    "   echom "Character Visual"
-    " else
-    "   echom "This should never happen"
-    " endif
+    " This comparison is case-insensitive
+    if currentmode ==? "\<C-V>"
+      let visualMode = "blk_vis"
+    "This comparison is case-sensitive
+    elseif currentmode ==# "V"
+      let visualMode = "line_vis"
+    else
+      let visualMode = "char_vis"
+    endif
     let [startLine, startCol] = [line('.'), col('.')]
 
     " retrieve the position ending the selection
@@ -114,7 +114,7 @@ function! VisualMark() "{{{
 
     " do whatever the user likes
     if g:visualMarks_exitVModeAfterMarking
-        normal! v
+        exec "normal! \<esc>"
     endif
 
     " update the dictionnary:
@@ -123,7 +123,7 @@ function! VisualMark() "{{{
         let g:visualMarks[filePath] = {}
     endif
     " and fill it up!
-    let g:visualMarks[filePath][mark] = [startLine, startCol, endLine, endCol]
+    let g:visualMarks[filePath][mark] = [startLine, startCol, endLine, endCol, visualMode]
 
     " and save it to the file. But I am sure we don't need to do this each time.
     call SaveVariable(g:visualMarks, g:filen)
@@ -156,11 +156,17 @@ function! GetVisualMark() "{{{
         let coordinates = g:visualMarks[filePath][mark]
         "move to the start pos, go to visual mode, and go to the end pos
         " + recursively open folds, just enough to see the selection
-        call cursor(coordinates[2], coordinates[3])
+        " call cursor(coordinates[2], coordinates[3])
         normal! zv
         call cursor(coordinates[0], coordinates[1])
         "enter visual mode to select the rest
-        exec "normal! zvv"
+        if coordinates[4] ==? "blk_vis"
+          exec "normal! zv\<c-v>"
+        elseif coordinates[4] ==? "line_vis"
+          exec "normal! zvV"
+        else
+          exec "normal! zvv"
+        endif
         call cursor(coordinates[2], coordinates[3])
     endif
 
