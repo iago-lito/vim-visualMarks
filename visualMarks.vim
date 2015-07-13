@@ -21,10 +21,16 @@
 "
 " Things that are still missing, in my opinion:
 " TODO:
-"   - make the warning softer?
+"   - the no-such-mark warning still requires the user to press Enter. Is it a
+"     good reason to remove the prompts before calling `nchar`?
 "   - utility functions to clean the dictionnary, change filenames, move files,
-"     etc.
-"   - make all this a Pathogen-friendly?
+"     etc. (truly needed?)
+"   - make all this a Pathogen-friendly Vim plugin? (I have no idea how to do)
+"   - avoid saving and reading the dictionnary on each call to the functions.
+"     Better use an `autocmd VimEnter, VimLeave`? Yet it would be less safe?
+"     Does it slow the process down that much?
+"   - save the type of visual mode? (v, V, <c-v>) (might be some more work since
+"     3 positions are needed to save a <c-v> block)
 " DONE:
 "   - use and save/read a `dictionnary`
 "   - warn the user when trying to get a unexistent mark
@@ -32,6 +38,12 @@
 "   - merged hallzy-master
 "   - find the file in one's home whatever name one has ;)
 "   - corrected a bug due to unconsistent variable names `mark` vs `register`
+"   - corrected an inversion of `start` and `end` of the selection
+"   - when restoring selection in a folded block, recursively unfold to show it
+"   - choose whether or not leaving visual mode after having set a mark
+"   - make the warning softer
+"   - optional file location for the file
+"
 " This DOES begin to look like something! :)
 
 " Here we go.
@@ -53,8 +65,12 @@ endfun
 " http://stackoverflow.com/q/31348782/3719101
 "}}}
 
+" Options:
 " the file where the big dictionnary will be stored.
-let g:filen = $HOME . "/.vim-vis-mark"
+let g:visualMarks_marksFile = $HOME . "/.vim-vis-mark"
+let g:visualMarks_exitVModeAfterMarking = 1
+
+let g:filen = g:visualMarks_marksFile
 " the big dictionnary itself:
 " Its organization is simple:
 "  - each *key* is the full path to a file
@@ -79,12 +95,17 @@ function! VisualMark() "{{{
     let mark = GetVisualMarkInput("mark selection ")
 
     " retrieve the position starting the selection
-    normal! gv
+    normal! gvo
     let [startLine, startCol] = [line('.'), col('.')]
 
     " retrieve the position ending the selection
     normal! o
     let [endLine, endCol] = [line('.'), col('.')]
+
+    " do whatever the user likes
+    if g:visualMarks_exitVModeAfterMarking
+        normal! v
+    endif
 
     " update the dictionnary:
     " Initialize the file entry if didn't existed yet:
@@ -119,14 +140,17 @@ function! GetVisualMark() "{{{
     endif
 
     if noSuchMark
-        echom "no Such mark " . mark . " for file " . filePath
+        echom "no Such mark " . mark . " for this file."
     else
         " Then we can safely get back to this selection!
         let coordinates = g:visualMarks[filePath][mark]
         "move to the start pos, go to visual mode, and go to the end pos
+        " + recursively open folds, just enough to see the selection
+        call cursor(coordinates[2], coordinates[3])
+        normal! zv
         call cursor(coordinates[0], coordinates[1])
         "enter visual mode to select the rest
-        exec "normal! v"
+        exec "normal! zvv"
         call cursor(coordinates[2], coordinates[3])
     endif
 
@@ -138,7 +162,6 @@ endfun
 " an appropriate key for the dictionnary.
 " For now, it uses `input` with a custom prompt message, and this is why it
 " requires the enter key to be pressed
-" TODO: would be great with no need to hit enter
 function! GetVisualMarkInput(prompt) "{{{
     echom a:prompt
     let mark = nr2char(getchar())
