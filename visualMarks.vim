@@ -96,6 +96,16 @@ function! VisualMark() "{{{
 
     " retrieve the position starting the selection
     normal! gvo
+    let currentmode = mode()
+    " if currentmode == "\<C-V>"
+    "   echom "Block Visual"
+    " elseif currentmode == "V"
+    "   echom "Line Visual"
+    " elseif currentmode == "v"
+    "   echom "Character Visual"
+    " else
+    "   echom "This should never happen"
+    " endif
     let [startLine, startCol] = [line('.'), col('.')]
 
     " retrieve the position ending the selection
