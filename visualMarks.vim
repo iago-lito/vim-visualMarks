@@ -26,13 +26,15 @@
 "   - utility functions to clean the dictionnary, change filenames, move files,
 "     etc. (truly needed?)
 "   - make all this a Pathogen-friendly Vim plugin? (I have no idea how to do)
-"   - avoid saving and reading the dictionnary on each call to the functions.
+"   - avoid saving and reading the dictionary on each call to the functions.
 "     Better use an `autocmd VimEnter, VimLeave`? Yet it would be less safe?
 "     Does it slow the process down that much?
-"   - save the type of visual mode? (v, V, <c-v>) (might be some more work since
-"     3 positions are needed to save a <c-v> block)
+"   - Adjust the script so that this feature also works for unnamed buffers. It
+"     might be good to make it such that when all unnamed buffers that were
+"     open are now closed, that we remove these entries from the vim-vis-mark
+"     file.
 " DONE:
-"   - use and save/read a `dictionnary`
+"   - use and save/read a `dictionary`
 "   - warn the user when trying to get a unexistent mark
 "   - make the marks specific to each file.
 "   - merged hallzy-master
@@ -43,6 +45,7 @@
 "   - choose whether or not leaving visual mode after having set a mark
 "   - make the warning softer
 "   - optional file location for the file
+"   - save the type of visual mode? (v, V, <c-v>)
 "
 " This DOES begin to look like something! :)
 
@@ -96,6 +99,16 @@ function! VisualMark() "{{{
 
     " retrieve the position starting the selection
     normal! gvo
+    let currentmode = mode()
+    " This comparison is case-insensitive
+    if currentmode ==? "\<C-V>"
+      let visualMode = "blk_vis"
+    "This comparison is case-sensitive
+    elseif currentmode ==# "V"
+      let visualMode = "line_vis"
+    else
+      let visualMode = "char_vis"
+    endif
     let [startLine, startCol] = [line('.'), col('.')]
 
     " retrieve the position ending the selection
@@ -104,7 +117,7 @@ function! VisualMark() "{{{
 
     " do whatever the user likes
     if g:visualMarks_exitVModeAfterMarking
-        normal! v
+        exec "normal! \<esc>"
     endif
 
     " update the dictionnary:
@@ -113,7 +126,7 @@ function! VisualMark() "{{{
         let g:visualMarks[filePath] = {}
     endif
     " and fill it up!
-    let g:visualMarks[filePath][mark] = [startLine, startCol, endLine, endCol]
+    let g:visualMarks[filePath][mark] = [startLine, startCol, endLine, endCol, visualMode]
 
     " and save it to the file. But I am sure we don't need to do this each time.
     call SaveVariable(g:visualMarks, g:filen)
@@ -144,13 +157,19 @@ function! GetVisualMark() "{{{
     else
         " Then we can safely get back to this selection!
         let coordinates = g:visualMarks[filePath][mark]
+        let visualMode = coordinates[4]
         "move to the start pos, go to visual mode, and go to the end pos
         " + recursively open folds, just enough to see the selection
-        call cursor(coordinates[2], coordinates[3])
         normal! zv
         call cursor(coordinates[0], coordinates[1])
         "enter visual mode to select the rest
-        exec "normal! zvv"
+        if visualMode ==? "blk_vis"
+          exec "normal! zv\<c-v>"
+        elseif visualMode ==? "line_vis"
+          exec "normal! zvV"
+        else
+          exec "normal! zvv"
+        endif
         call cursor(coordinates[2], coordinates[3])
     endif
 
