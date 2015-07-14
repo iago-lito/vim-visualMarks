@@ -3,7 +3,7 @@
 " Maintainer:	Iago-lito <iago.bonnici@gmail.com>
 " License:	This file is placed under the GNU PublicLicense 2.
 
-" lines for handling line continuation, according to :help write-plugin<CR>
+" lines for handling line continuation, according to :help write-plugin<CR> "{{{
 let s:save_cpo = &cpo
 set cpo&vim
 " make it possible for the user not to load the plugin, same source
@@ -11,6 +11,7 @@ if exists("g:loaded_visualMarks")
     finish
 endif
 let g:loaded_visualMarks = 1
+"}}}
 
 " This small vimScript just wants to provide the following feature:
 " - - - Save visually selected blocks by associating them to custom marks. - - -
@@ -35,17 +36,14 @@ let g:loaded_visualMarks = 1
 "
 " Things that are still missing, in my opinion:
 " TODO:
+"   - document.
 "   - the no-such-mark warning still requires the user to press Enter. Is it a
 "     good reason to remove the prompts before calling `nchar`?
 "   - utility functions to clean the dictionnary, change filenames, move files,
 "     etc. (truly needed?)
-"   - make all this a Pathogen-friendly Vim plugin?
-"   - make the functions local to the script (s:, <SID>), handle <Plug>
 "   - avoid saving and reading the dictionary on each call to the functions.
 "     Better use an `autocmd VimEnter, VimLeave`? Yet it would be less safe?
 "     Does it slow the process down that much?
-"   - save the type of visual mode? (v, V, <c-v>) (might be some more work since
-"     3 positions are needed to save a <c-v> block)
 "   - Adjust the script so that this feature also works for unnamed buffers. It
 "     might be good to make it such that when all unnamed buffers that were
 "     open are now closed, that we remove these entries from the vim-vis-mark
@@ -63,6 +61,8 @@ let g:loaded_visualMarks = 1
 "   - make the warning softer
 "   - optional file location for the file
 "   - save the type of visual mode? (v, V, <c-v>)
+"   - made all this a Pathogen-friendly Vim plugin
+"   - made the functions local to the script (s:, <SID>), added <Plug> maps
 "
 " This DOES begin to look like something! :)
 
@@ -207,28 +207,23 @@ function! s:GetVisualMarkInput(prompt) "{{{
 endfun
 "}}}
 
-" " Don't work yet !
-" " And we're done. Now map it to something cool:
-" noremap <SID>Add :call <SID>Add(expand("<cword>"), 1)<CR>
-" noremap <unique> <script> <Plug>TypecorrAdd <SID>Add
-" map <unique> <Leader>a  <Plug>TypecorrAdd
+" And we're done. Now map it to something cool: "{{{
+" Set the <Plug> specific maps
+vnoremap <unique> <script> <Plug>VisualMarksVisualMark <SID>VisualMark
+nnoremap <unique> <script> <Plug>VisualMarksGetVisualMark <SID>GetVisualMark
+" Set the calls to the functions, local to this script
+vnoremap <SID>VisualMark    <esc>:call <SID>VisualMark()<CR>
+nnoremap <SID>GetVisualMark      :call <SID>GetVisualMark()<CR>
+" And set the default maps! (without interfering with the user's preferences)
+if !hasmapto("<Plug>VisualMarksVisualMark")
+    vmap <unique> m <Plug>VisualMarksVisualMark
+endif
+if !hasmapto("<Plug>VisualMarksGetVisualMark")
+    nmap <unique> < <Plug>VisualMarksGetVisualMark
+endif
+"}}}
 
-" vnoremap <unique> <script> <Plug>VisualMarksVisualMark <SID>VisualMark
-" nnoremap <unique> <script> <Plug>VisualMarksGetVisualMark <SID>GetVisualMark
-" vnoremap <SID>VisualMark <esc>:call <SID>VisualMark()<CR>
-" nnoremap <SID>GetVisualMark :call <SID>GetVisualMark()<CR>
-
-" if !hasmapto("<Plug>VisualMarksVisualMark")
-    " vmap <unique> m <Plug>VisualMarksVisualMark
-" endif
-" if !hasmapto("<Plug>VisualMarksGetVisualMark")
-    " nmap < <Plug>VisualMarksGetVisualMark
-" endif
-
-vnoremap m <esc>:call <SID>VisualMark()<CR>
-nnoremap < :call <SID>GetVisualMark()<CR>
-
-" " lines for handling line continuation, according to :help write-plugin<CR>
-" let &cpo = s:save_cpo
-" unlet s:save_cpo
-
+" lines for handling line continuation, according to :help write-plugin<CR> "{{{
+let &cpo = s:save_cpo
+unlet s:save_cpo
+"}}}
