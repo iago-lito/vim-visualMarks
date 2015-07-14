@@ -26,11 +26,15 @@
 "   - utility functions to clean the dictionnary, change filenames, move files,
 "     etc. (truly needed?)
 "   - make all this a Pathogen-friendly Vim plugin? (I have no idea how to do)
-"   - avoid saving and reading the dictionnary on each call to the functions.
+"   - avoid saving and reading the dictionary on each call to the functions.
 "     Better use an `autocmd VimEnter, VimLeave`? Yet it would be less safe?
 "     Does it slow the process down that much?
+"   - Adjust the script so that this feature also works for unnamed buffers. It
+"     might be good to make it such that when all unnamed buffers that were
+"     open are now closed, that we remove these entries from the vim-vis-mark
+"     file.
 " DONE:
-"   - use and save/read a `dictionnary`
+"   - use and save/read a `dictionary`
 "   - warn the user when trying to get a unexistent mark
 "   - make the marks specific to each file.
 "   - merged hallzy-master
