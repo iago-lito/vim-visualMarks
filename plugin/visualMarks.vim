@@ -36,7 +36,6 @@ let g:loaded_visualMarks = 1
 "
 " Things that are still missing, in my opinion:
 " TODO:
-"   - document.
 "   - the no-such-mark warning still requires the user to press Enter. Is it a
 "     good reason to remove the prompts before calling `nchar`?
 "   - utility functions to clean the dictionnary, change filenames, move files,
@@ -63,6 +62,7 @@ let g:loaded_visualMarks = 1
 "   - save the type of visual mode? (v, V, <c-v>)
 "   - made all this a Pathogen-friendly Vim plugin
 "   - made the functions local to the script (s:, <SID>), added <Plug> maps
+"   - documented.
 "
 " This DOES begin to look like something! :)
 

@@ -1,0 +1,159 @@
+*visualMarks.txt*                  Version 0.1           Last change: 2015-07-18
+
+                                  *VisualMarks*
+
+                Marking and restoring visually selected areas.
+
+==============================================================================
+CONTENTS                                                 *visualMarks-contents*
+
+   1. Introduction ....................... |visualMarks-introduction|
+   2. Usage .............................. |visualMarks-usage|
+   3. Default mappings ................... |visualMarks-mappings|
+   4. Custom settings .................... |visualMarks-settings|
+   5. License ............................ |visualMarks-license|
+   6. Bugs ............................... |visualMarks-bugs|
+   7. Contributing ....................... |visualMarks-contribute|
+   8. Changelog .......................... |visualMarks-changelog|
+   9. Credits ............................ |visualMarks-credits|
+
+==============================================================================
+1. Introduction                                      *visualMarks-introduction*
+
+    This plugin allows you saving visually selected areas to single-character
+marks, then restoring them later from anywhere in your file, just like Vim's
+native regular mark registers do.
+
+==============================================================================
+2. Usage                                                    *visualMarks-usage*
+
+In visual mode, if you wish to save your selection to the mark `a`, just type:
+
+    `ma`
+
+Then do anything you like. When you are somewhere else in your file and want
+to select again the same area, just type in normal mode:
+
+    `<a`
+
+And you will enter visual mode back with the saved selection. You may choose
+any single-character mark you like: `a`, `b`, ` `, `&`, `$` etc.
+
+This plugin is rather young. It currently features:
+
+    - no overwriting of Vim's regular marks and registers
+    - one set of marks for each file you are working on
+    - persistent marks after closing Vim
+    - restoring type of visual mode (v, V, <c-v>)
+
+And we hope it will support soon:
+
+    - marking visually selected areas in buffers with no filename
+    - working along with vim-signature plugin
+      (https://github.com/kshenoy/vim-signature)
+    - anything you would wish it to support. Please drop us a line at
+      https://github.com/iago-lito/vim-visualMarks/issues
+
+==============================================================================
+3. Default Mappings                                      *visualMarks-mappings*
+
+Visual mode:  ~
+>
+    <Plug>VisualMarksVisualMark
+<
+        Enter a mark and save the currently selected area to this mark.
+
+Normal mode: ~
+>
+    <Plug>VisualMarksGetVisualMark
+<
+        Enter a mark then enter visual mode over the previously saved area.
+
+Default mappings: ~
+>
+    vmap m <Plug>VisualMarksVisualMark
+    nmap < <Plug>VisualMarksGetVisualMark
+<
+        If you have already mapped these keys to something else, visualMark
+        won't define any mappings and you will have to set them yourself.
+
+==============================================================================
+4. Custom Settings                                       *visualMarks-settings*
+
+File location: ~
+
+    VisualMarks saves a dictionnary containing your marked areas to the disk.
+You can choose the location of this file by setting a custom path with this
+option: >
+
+    let g:visualMarks_marksFile = $HOME . "/.vim/vim-visualMarks"
+
+Behavior: ~
+
+You may or may not want visualMarks to exit visual mode after having set a
+mark. If you do, set this option to 1, otherwise 0: >
+
+    let g:visualMarks_exitVModeAfterMarking = 1
+
+==============================================================================
+5. License                                                *visualMarks-license*
+
+    VisualMarks is released under the GPL2.
+    See https://www.gnu.org/licenses/gpl-2.0.html
+
+==============================================================================
+6. Bugs                                                      *visualMarks-bugs*
+
+    VisualMarks currently doesn't support marking selection in buffers that
+don't have a filename. We're working on it.
+
+    If you experience any bugs or have feature requests, please open an issue
+on GitHub:
+
+    https://github.com/iago-lito/vim-visualMarks/issues
+
+==============================================================================
+7. Contributing                                        *visualMarks-contribute*
+
+    Fork the source repository on GitHub and send a pull request if you have
+any code improvements. We'll be happy to work with you :)
+
+Source repository: https://github.com/iago-lito/vim-visualMarks
+
+==============================================================================
+8. Changelog                                            *visualMarks-changelog*
+
+Next: ~
+
+    - working along with vim-signature plugin:
+      https://github.com/kshenoy/vim-signature
+    - allow marking selections in buffer with no file name
+
+Initial release 0.1: ~
+
+   - added documentation
+   - make all this a Pathogen-friendly Vim plugin
+   - save the type of visual mode (v, V, <c-v>)
+   - optional file location for the file with g:visualMarks_marksFile
+   - choose whether or not leaving visual mode after having set a mark with
+     g:visualMarks_exitVModeAfterMarking
+   - when restoring selection in a folded block, recursively unfold to show it
+   - make the marks specific to each file.
+   - warn the user when trying to get a unexistent mark
+   - save the marks in a VimScrip `dictionary` variable type
+
+==============================================================================
+9. Credits                                                *visualMarks-credits*
+
+Authors: ~
+
+           Iago-lito   http://github.com/iago-lito
+         Steven Hall   http://github.com/hallzy
+
+Thanks to: ~
+
+    VanLaser for saving and restoring VimScript variables to/from the disk:
+        http://stackoverflow.com/questions/31348782/
+    Steve Losh for this really, really useful book:
+        http://learnvimscriptthehardway.stevelosh.com/
+
