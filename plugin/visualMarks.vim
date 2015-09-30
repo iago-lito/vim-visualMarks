@@ -1,7 +1,7 @@
 " Vim global plugin for saving and recovering visually selected text areas
-" Last Change:	2015/07/13
-" Maintainer:	Iago-lito <iago.bonnici@gmail.com>
-" License:	This file is placed under the GNU PublicLicense 2.
+" Last Change:  2015/07/13
+" Maintainer:  Iago-lito <iago.bonnici@gmail.com>
+" License:  This file is placed under the GNU PublicLicense 2.
 
 " lines for handling line continuation, according to :help write-plugin<CR> "{{{
 let s:save_cpo = &cpo
@@ -111,6 +111,12 @@ function! s:VisualMark() "{{{
     " get the current file path
     let filePath = expand('%:p')
 
+    if filePath == ""
+        " If the filename is empty (for example, if it is an unnamed buffer),
+        " give it something else.
+        let filePath = " "
+    endif
+
     " get the mark ID
     let mark = s:GetVisualMarkInput("mark selection ")
 
@@ -156,6 +162,12 @@ endfun
 function! s:GetVisualMark() "{{{
     " get the current file path
     let filePath = expand('%:p')
+
+    if filePath == ""
+        " If the filename is empty (for example, if it is an unnamed buffer),
+        " give it something else.
+        let filePath = " "
+    endif
 
     " get the mark ID
     let mark = s:GetVisualMarkInput("restore selection ")
