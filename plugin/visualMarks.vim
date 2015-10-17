@@ -1,7 +1,7 @@
 " Vim global plugin for saving and recovering visually selected text areas
-" Last Change:	2015/07/13
-" Maintainer:	Iago-lito <iago.bonnici@gmail.com>
-" License:	This file is placed under the GNU PublicLicense 2.
+" Last Change:  2015/9/30
+" Maintainer:   Iago-lito <iago.bonnici@gmail.com>
+" License:      This file is placed under the GNU PublicLicense 2.
 
 " lines for handling line continuation, according to :help write-plugin<CR> "{{{
 let s:save_cpo = &cpo
@@ -43,8 +43,7 @@ let g:loaded_visualMarks = 1
 "   - avoid saving and reading the dictionary on each call to the functions.
 "     Better use an `autocmd VimEnter, VimLeave`? Yet it would be less safe?
 "     Does it slow the process down that much?
-"   - Adjust the script so that this feature also works for unnamed buffers. It
-"     might be good to make it such that when all unnamed buffers that were
+"   - Might be good to make it such that when all unnamed buffers that were
 "     open are now closed, that we remove these entries from the vim-vis-mark
 "     file.
 " DONE:
@@ -111,6 +110,12 @@ function! s:VisualMark() "{{{
     " get the current file path
     let filePath = expand('%:p')
 
+    if filePath == ""
+        " If the filename is empty (for example, if it is an unnamed buffer),
+        " give it something else.
+        let filePath = " "
+    endif
+
     " get the mark ID
     let mark = s:GetVisualMarkInput("mark selection ")
 
@@ -156,6 +161,12 @@ endfun
 function! s:GetVisualMark() "{{{
     " get the current file path
     let filePath = expand('%:p')
+
+    if filePath == ""
+        " If the filename is empty (for example, if it is an unnamed buffer),
+        " give it something else.
+        let filePath = " "
+    endif
 
     " get the mark ID
     let mark = s:GetVisualMarkInput("restore selection ")
