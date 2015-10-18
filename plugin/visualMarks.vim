@@ -43,10 +43,11 @@ let g:loaded_visualMarks = 1
 "   - avoid saving and reading the dictionary on each call to the functions.
 "     Better use an `autocmd VimEnter, VimLeave`? Yet it would be less safe?
 "     Does it slow the process down that much?
-"   - Might be good to make it such that when all unnamed buffers that were
-"     open are now closed, that we remove these entries from the vim-vis-mark
-"     file.
 " DONE:
+"   - Unnamed buffers are given special entries to the dictionnary, and this
+"     entry is cleaned up on BufDelete so that there is no persistence from one
+"     unnamed buffer to another. Each unnamed buffer is identified by its
+"     `bufnr()`.
 "   - added doc/tags to .gitignore
 "   - use and save/read a `dictionary`
 "   - warn the user when trying to get a unexistent mark
@@ -105,16 +106,60 @@ else
     call s:SaveVariable(g:visualMarks, g:filen)
 endif
 
+" Here is the function choosing a string to identify the dictionnary entry. This
+" string is either the absolute file path or a special chain + the buffer id for
+" unnamed buffers:
+" These special entries will be deleted from the dictionnary on BufDelete.
+let g:visualMarks_unnamedPrefix = "unnamed:"
+function! s:DictionnaryEntry() "{{{
+
+    " The entry is the current absolute file path
+    let entry = expand('%:p')
+
+    if len(entry) == 0
+        " If the file path is empty (for example, if it is an unnamed buffer),
+        " give it something else.
+        let entry = g:visualMarks_unnamedPrefix . bufnr('%')
+    endif
+
+    return entry
+
+endfunction
+"}}}
+
+" Here is the function whose responsibility is to clean the dictionnary on
+" BufDelete so that the marks in unnamed buffers don't get persistent.
+function! s:CleanDictionnary() "{{{
+
+    " WATCH OUT: during 'BufDelete', the '%'-pointed buffer might not be the one
+    " being deleted.. thus the <afile> and <abuf>
+    let filePath = expand('<afile>:p')
+    let bufferID = expand('<abuf>')
+    if len(filePath) > 0
+        " then the buffer has a name and so there is no cleaning to do.
+        return
+    endif
+
+    " then a unnamed buffer is being deleted, remove its entry from the
+    " dictionnary:
+    let entry = g:visualMarks_unnamedPrefix . bufferID
+    " it might not exist if no mark has been recorded in this buffer
+    if has_key(g:visualMarks, entry)
+        unlet g:visualMarks[entry]
+        call s:SaveVariable(g:visualMarks, g:filen)
+    endif
+
+endfunction
+"}}}
+augroup VisualMarks_Cleanup
+    autocmd!
+    autocmd BufDelete * call s:CleanDictionnary()
+augroup END
+
 " This is the function setting a mark, called from visual mode.
 function! s:VisualMark() "{{{
-    " get the current file path
-    let filePath = expand('%:p')
-
-    if filePath == ""
-        " If the filename is empty (for example, if it is an unnamed buffer),
-        " give it something else.
-        let filePath = " "
-    endif
+    " get the entry:
+    let entry = s:DictionnaryEntry()
 
     " get the mark ID
     let mark = s:GetVisualMarkInput("mark selection ")
@@ -144,11 +189,11 @@ function! s:VisualMark() "{{{
 
     " update the dictionnary:
     " Initialize the file entry if didn't existed yet:
-    if !has_key(g:visualMarks, filePath)
-        let g:visualMarks[filePath] = {}
+    if !has_key(g:visualMarks, entry)
+        let g:visualMarks[entry] = {}
     endif
     " and fill it up!
-    let g:visualMarks[filePath][mark] = [startLine, startCol
+    let g:visualMarks[entry][mark] = [startLine, startCol
                                      \ , endLine, endCol
                                      \ , visualMode]
 
@@ -159,14 +204,8 @@ endfun
 
 " This is the function retrieving a marked selection, called from normal mode.
 function! s:GetVisualMark() "{{{
-    " get the current file path
-    let filePath = expand('%:p')
-
-    if filePath == ""
-        " If the filename is empty (for example, if it is an unnamed buffer),
-        " give it something else.
-        let filePath = " "
-    endif
+    " get the entry:
+    let entry = s:DictionnaryEntry()
 
     " get the mark ID
     let mark = s:GetVisualMarkInput("restore selection ")
@@ -176,17 +215,17 @@ function! s:GetVisualMark() "{{{
 
     " check whether the mark has already been recorded, then put the flag down.
     let noSuchMark = 1
-    if has_key(g:visualMarks, filePath)
-        if has_key(g:visualMarks[filePath], mark)
+    if has_key(g:visualMarks, entry)
+        if has_key(g:visualMarks[entry], mark)
             let noSuchMark = 0
         endif
     endif
 
     if noSuchMark
-        echom "no Such mark " . mark . " for this file."
+        echom "no Such mark " . mark . " for this buffer."
     else
         " Then we can safely get back to this selection!
-        let coordinates = g:visualMarks[filePath][mark]
+        let coordinates = g:visualMarks[entry][mark]
         let visualMode = coordinates[4]
         "move to the start pos, go to visual mode, and go to the end pos
         " + recursively open folds, just enough to see the selection

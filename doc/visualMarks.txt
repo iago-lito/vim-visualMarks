@@ -48,7 +48,6 @@ This plugin is rather young. It currently features:
 
 And we hope it will support soon:
 
-    - marking visually selected areas in buffers with no filename
     - working along with vim-signature plugin
       (https://github.com/kshenoy/vim-signature)
     - anything you would wish it to support. Please drop us a line at
@@ -104,9 +103,6 @@ mark. If you do, set this option to 1, otherwise 0: >
 ==============================================================================
 6. Bugs                                                      *visualMarks-bugs*
 
-    VisualMarks currently doesn't support marking selection in buffers that
-don't have a filename. We're working on it.
-
     If you experience any bugs or have feature requests, please open an issue
 on GitHub:
 
@@ -127,7 +123,10 @@ Next: ~
 
     - working along with vim-signature plugin:
       https://github.com/kshenoy/vim-signature
-    - allow marking selections in buffer with no file name
+
+Featured in the current commit: ~
+
+    - Mark selections in buffer with no file name
 
 Initial release 0.1: ~
 
