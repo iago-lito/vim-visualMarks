@@ -47,10 +47,10 @@ let g:loaded_visualMarks = 1
 "     open are now closed, that we remove these entries from the vim-vis-mark
 "     file.
 " DONE:
+"   - added doc/tags to .gitignore
 "   - use and save/read a `dictionary`
 "   - warn the user when trying to get a unexistent mark
 "   - make the marks specific to each file.
-"   - merged hallzy-master
 "   - find the file in one's home whatever name one has ;)
 "   - corrected a bug due to unconsistent variable names `mark` vs `register`
 "   - corrected an inversion of `start` and `end` of the selection
