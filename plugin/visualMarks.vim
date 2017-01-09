@@ -176,11 +176,13 @@ function! s:VisualMark() "{{{
     else
       let visualMode = "char_vis"
     endif
-    let [startLine, startCol] = [line('.'), col('.')]
+    let [startLine, startCol, startOff] = getpos('.')[1:3]
+    let startCol = startCol + startOff
 
     " retrieve the position ending the selection
     normal! o
-    let [endLine, endCol] = [line('.'), col('.')]
+    let [endLine, endCol, endOff] = getpos('.')[1:3]
+    let endCol = endCol + endOff
 
     " do whatever the user likes
     if g:visualMarks_exitVModeAfterMarking
