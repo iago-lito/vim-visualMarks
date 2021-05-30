@@ -40,7 +40,7 @@ after closing it).
 
 Configure marksFile path
 ------------------------
-In case you'd want to store the marks file in alternative location, then
+In case you'd want to store the marks file in an alternative location, then
 configure your preference in your vimrc, for example:
 ```
 let g:visualMarks_marksFile = $XDG_CONFIG_HOME . '/vim/vis-mark'
