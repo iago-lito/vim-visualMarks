@@ -87,7 +87,9 @@ endfun
 
 " Options:
 " the file where the big dictionnary will be stored.
-let g:visualMarks_marksFile = $HOME . "/.vim-vis-mark"
+if !exists('visualMarks_marksFile')
+    let g:visualMarks_marksFile = $HOME . "/.vim-vis-mark"
+endif
 let g:visualMarks_exitVModeAfterMarking = 1
 
 let g:filen = g:visualMarks_marksFile
