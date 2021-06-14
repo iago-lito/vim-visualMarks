@@ -38,6 +38,14 @@ visual mark in file "b.txt" of the same register name are different marks, and
 will be persistent (ie, they will be able to be used after coming back to a file
 after closing it).
 
+Configure marksFile path
+------------------------
+In case you'd want to store the marks file in an alternative location, then
+configure your preference in your vimrc, for example:
+```
+let g:visualMarks_marksFile = $XDG_CONFIG_HOME . '/vim/vis-mark'
+```
+
 Making Your Own Mapping:
 ------------------------
 To change the default mapping to something else, put this into your vimrc:
